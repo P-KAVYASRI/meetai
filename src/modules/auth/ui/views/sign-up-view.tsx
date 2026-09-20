@@ -1,12 +1,14 @@
 "use client";
 
 import {useForm} from "react-hook-form";
+import { useRouter } from "next/navigation";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {refine,z} from "zod";
 
 
-
+import {FaGithub,FaGoogle } from "react-icons/fa";
 import { OctagonAlert, OctagonAlertIcon } from "lucide-react";
+
 import { Card, CardContent } from "@/components/ui/card";
 
 import {Input} from "@/components/ui/input";
@@ -17,8 +19,8 @@ import {Alert, AlertTitle} from "@/components/ui/alert";
 import {Form, FormControl, FormField, FormItem,
      FormLabel, FormMessage} from "@/components/ui/form";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+
 
 const formSchema=z.object({
     name: z.string().min(1, { message:"Name is required"}),
@@ -32,7 +34,7 @@ const formSchema=z.object({
 } )
 
 export const SignUpView = () => {
-    const router=useRouter();
+    const router = useRouter();
     const [error,setError]=useState<string | null>(null);
     const [pending,setPending]=useState(false);
     const form = useForm<z.infer<typeof formSchema>>({
@@ -53,13 +55,16 @@ export const SignUpView = () => {
             name:data.name,
             email: data.email, 
             password: data.password,
+            callbackURL: "/",
         },
         {
             onSuccess:()=>{
                 setPending(false);
                 router.push("/");
+                
             },
             onError:({error})=>{
+                setPending(false);
                 setError(error.message);
             }
         }
@@ -67,6 +72,28 @@ export const SignUpView = () => {
     
        
     };
+
+     const onSocial=(provider: "github" | "google") => {
+        setError(null);
+        setPending(true);
+
+         authClient.signIn.social(
+        {
+            provider: provider,
+            callbackURL: "/",
+        },
+        {
+            onSuccess:()=>{
+                setPending(false);
+                
+            },
+            onError:({error})=>{
+                setPending(false);
+                setError(error.message);
+            }
+        }
+    );
+};
 
   return (
     <div className="flex flex-col gap-6">
@@ -173,19 +200,21 @@ export const SignUpView = () => {
            <div className="grid grid-cols-2 gap-4">
     <Button
         disabled={pending}
+        onClick ={()=>onSocial("google")}
         variant="outline" 
         type="button" 
         className="w-full"
         >
-            Google
+           <FaGoogle/>
     </Button>
     <Button
+     onClick ={()=>onSocial("github")}
         disabled={pending}
         variant="outline" 
         type="button" 
         className="w-full"
         >
-            GitHub
+            <FaGithub/>
     </Button>
                  </div>
                  <div className="text-black-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
