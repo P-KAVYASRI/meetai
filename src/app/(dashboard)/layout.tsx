@@ -5,7 +5,7 @@ import { DashboardSidebar } from "@/modules/dashboard/ui/components/dashboard-si
 
 interface Props{
     children: React.ReactNode;
-}
+}  
 
 const Layout = ({children}:Props)=>{
     return (
