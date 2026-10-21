@@ -1,13 +1,32 @@
-export default function MeetingsPage() {
-    return (
-        <div className="p-8">
-            <h1 className="text-2xl font-semibold">
-                Meetings
-            </h1>
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
-            <p className="mt-2 text-gray-600">
-                Welcome to the Meetings page.
-            </p>
-        </div>
+import { getQueryClient, trpc } from "@/trpc/server";
+
+
+import { 
+    MeetingsView, 
+    MeetingsViewError, 
+    MeetingsViewLoading 
+} from "@/modules/meetings/ui/views/meetings-view";
+
+
+const Page = () => {
+    const queryClient = getQueryClient();
+
+    void queryClient.prefetchQuery(
+        trpc.meetings.getMany.queryOptions({})
     );
-}
+
+    return (
+        <HydrationBoundary state={dehydrate(queryClient)}>
+            <Suspense fallback={<MeetingsViewLoading/>}>
+                <ErrorBoundary fallback = {<MeetingsViewError/>}>
+                    <MeetingsView />
+                </ErrorBoundary>
+            </Suspense>
+        </HydrationBoundary>
+    );
+};
+
